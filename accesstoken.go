@@ -23,7 +23,7 @@ func (s *Server) GetAccessToken() string {
 	s.Lock()
 	defer s.Unlock()
 	var err error
-	if s.accessToken == nil || s.accessToken.ExpiresIn < time.Now().Unix() {
+	if s.AccessToken == nil || s.AccessToken.ExpiresIn < time.Now().Unix() {
 		for i := 0; i < 3; i++ {
 			err = s.getAccessToken()
 			if err == nil {
@@ -36,7 +36,7 @@ func (s *Server) GetAccessToken() string {
 			return ""
 		}
 	}
-	return s.accessToken.AccessToken
+	return s.AccessToken.AccessToken
 }
 
 // GetAccessToken 读取默认实例AccessToken
@@ -60,7 +60,7 @@ func GetUserAccessToken() string {
 func (s *Server) getAccessToken() (err error) {
 	if s.ExternalTokenHandler != nil {
 		Printf("使用外部函数获取token")
-		s.accessToken = s.ExternalTokenHandler(s.AppId)
+		s.AccessToken = s.ExternalTokenHandler(s.AppId)
 		return
 	} else {
 		Printf("使用本地机制获取token")
@@ -71,11 +71,12 @@ func (s *Server) getAccessToken() (err error) {
 			return
 		}
 		if at.ErrCode > 0 {
+			s.AccessToken = at
 			return at.Error()
 		}
 		Printf("[%v::%v]:%+v", s.AppId, s.AgentId, *at)
-		at.ExpiresIn = time.Now().Unix() +  at.ExpiresIn-5
-		s.accessToken = at
+		at.ExpiresIn = time.Now().Unix() + at.ExpiresIn - 5
+		s.AccessToken = at
 		return
 	}
 }

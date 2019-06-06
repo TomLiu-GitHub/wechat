@@ -53,7 +53,7 @@ type Server struct {
 	TokenUrl             string
 	JsApi                string
 	Safe                 int
-	accessToken          *AccessToken
+	AccessToken          *AccessToken
 	ticket               *Ticket
 	UserList             userList
 	DeptList             DeptList
@@ -83,6 +83,7 @@ func New(token, appid, secret string, key ...string) (s *Server) {
 	s.Set(token, appid, secret, key...)
 	return s
 }
+
 // NewServer 空容器
 func NewServer(f func(appId string) *AccessToken) *Server {
 	s := &Server{
