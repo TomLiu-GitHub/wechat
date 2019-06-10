@@ -39,12 +39,7 @@ func (s *Server) GetAccessToken() string {
 	return s.AccessToken.AccessToken
 }
 
-// GetAccessToken 读取默认实例AccessToken
-func GetAccessToken() string {
-	return std.GetAccessToken()
-}
-
-// GetUserAccessToken 获取通讯录AccessToken
+// GetUserAccessToken 获取企业微信通讯录AccessToken
 func (s *Server) GetUserAccessToken() string {
 	if us, ok := UserServerMap[s.AppId]; ok {
 		return us.GetAccessToken()
@@ -52,16 +47,12 @@ func (s *Server) GetUserAccessToken() string {
 	return s.GetAccessToken()
 }
 
-// GetUserAccessToken 获取默认实例通讯录AccessToken
-func GetUserAccessToken() string {
-	return std.GetUserAccessToken()
-}
-
 func (s *Server) getAccessToken() (err error) {
 	if s.ExternalTokenHandler != nil {
 		Printf("使用外部函数获取token")
 		s.AccessToken = s.ExternalTokenHandler(s.AppId)
 		return
+<<<<<<< HEAD
 	} else {
 		Printf("使用本地机制获取token")
 		url := fmt.Sprintf(s.TokenUrl, s.AppId, s.Secret)
@@ -77,8 +68,24 @@ func (s *Server) getAccessToken() (err error) {
 		Printf("[%v::%v]:%+v", s.AppId, s.AgentId, *at)
 		at.ExpiresIn = time.Now().Unix() + at.ExpiresIn - 5
 		s.AccessToken = at
+=======
+	}
+	Printf("使用本地机制获取token")
+	url := fmt.Sprintf(s.TokenUrl, s.AppId, s.Secret)
+	Printf(url)
+	at := new(AccessToken)
+	if err = util.GetJson(url, at); err != nil {
+>>>>>>> 259719733fd708e6d532c3d1e0c0374b24955a2b
 		return
 	}
+	if at.ErrCode > 0 {
+		return at.Error()
+	}
+	Printf("[%v::%v]:%+v", s.AppId, s.AgentId, *at)
+	at.ExpiresIn = time.Now().Unix() + at.ExpiresIn - 5
+	s.accessToken = at
+	return
+
 }
 
 // Ticket JS-SDK
@@ -138,9 +145,10 @@ func (s *Server) GetJsConfig(Url string) *JsConfig {
 	jc.Timestamp = time.Now().Unix()
 	jc.Nonsestr = "esap"
 	jc.Signature = sortSha1(fmt.Sprintf("jsapi_ticket=%v&noncestr=%v&timestamp=%v&url=%v", s.GetTicket(), jc.Nonsestr, jc.Timestamp, Url))
+	// TODO：可加入其他apilist
 	jc.JsApiList = []string{"scanQRCode"}
 	jc.Url = Url
 	jc.App = s.AgentId
-	Println("jsconfig:", jc) //debug
+	Println("jsconfig:", jc) // Debug
 	return jc
 }

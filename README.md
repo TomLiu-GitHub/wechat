@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/esap/wechat)](https://goreportcard.com/report/github.com/esap/wechat)
 [![GoDoc](http://godoc.org/github.com/esap/wechat?status.svg)](http://godoc.org/github.com/esap/wechat)
 
-**微信SDK的golang实现，短小精悍，同时兼容【企业号/服务号/订阅号/小程序】**
+**微信SDK的golang实现，短小精悍，同时兼容【企业微信/服务号/订阅号/小程序】**
 
 ## 快速开始
 
@@ -14,35 +14,23 @@ package main
 
 import (
 	"net/http"
+
 	"github.com/esap/wechat" // 微信SDK包
 )
 
 func main() {
 	wechat.Debug = true
-	wechat.Set("yourToken", "yourAppID", "yourSecret", "yourAesKey")
-	http.HandleFunc("/", WxHandler)
+	app := wechat.New("yourToken", "yourAppID", "yourSecret", "yourEncodingAesKey")
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		app.VerifyURL(w, r).NewText("客服消息1").Send().NewText("客服消息2").Send().NewText("查询OK").Reply()
+	})
 	http.ListenAndServe(":9090", nil)
-}
-
-func WxHandler(w http.ResponseWriter, r *http.Request) {
-	wechat.VerifyURL(w, r).NewText("这是客服消息").Send().NewText("这是被动回复").Reply()
 }
 
 ```
 ## 配置方式
-* 使用默认实例
-```go
-	// 不带aesKey则为明文模式
-	wechat.Set("token", "appId", "secret")
 
-	// 带aesKey则为密文模式
-	wechat.Set("token", "appId", "secret", "aesKey")
-
-	// 企业号自动配置为密文模式
-	wechat.SetEnt("token", "appId", "secret", "aesKey", "agentId")
-```
-
-* 创建其他实例，密文模式
+* 创建实例，密文模式
 ```go
 	// 创建公众号实例(服务号/订阅号/小程序) 不带aesKey则为明文模式
 	app := wechat.New("token", "appId", "secret")
@@ -50,7 +38,7 @@ func WxHandler(w http.ResponseWriter, r *http.Request) {
 	// 创建公众号实例(服务号/订阅号/小程序)
 	app := wechat.New("token", "appId", "secret", "aesKey")
 
-	// 创建企业号实例
+	// 创建企业微信实例
 	app := wechat.NewEnt("token", "appId", "secret", "aesKey", "agentId")
 
 	// 实例化后其他业务操作
@@ -60,7 +48,7 @@ func WxHandler(w http.ResponseWriter, r *http.Request) {
 
 ## 消息管理
 
-* 通常将`wechat.VerifyURL(http.ResponseWriter, *http.Request)`嵌入http handler
+* 通常将`app.VerifyURL(http.ResponseWriter, *http.Request)`嵌入http handler
 
 该函数返回`*wechat.Context`基本对象，其中的Msg为用户消息：
 
@@ -97,49 +85,6 @@ type WxMsg struct {
 		ScanType   string
 		ScanResult string
 	}
-
-	AgentType string
-	ItemCount int
-	PackageId string
-
-	Item []struct {
-		FromUserName string
-		CreateTime   int64
-		MsgType      string
-		Event        string // event
-		Name         string
-		Owner        string
-		AddUserList  string
-		DelUserList  string
-		ChatId       string
-		MsgId        int64
-
-		ChatInfo struct {
-			ChatId   string
-			Name     string
-			Owner    string
-			UserList string
-		}
-
-		Content  string // text
-		Receiver struct {
-			Type string
-			Id   string
-		}
-
-		FileName string // file
-		PicUrl   string // image/link
-		MediaId  string // image/voice/video/shortvideo
-
-		Location_X float32 // location
-		Location_Y float32 // location
-		Scale      int     // location
-		Label      string  // location
-
-		Title       string // link
-		Description string // link
-		Url         string // link
-	}
 }
 
 ```
@@ -149,7 +94,7 @@ type WxMsg struct {
 ```go
 // echo示例 企业号回调接口
 func wxApiPost(c echo.Context) error {
-	ctx := wechat.VerifyURL(c.Response().Writer, c.Request())
+	ctx := app.VerifyURL(c.Response().Writer, c.Request())
 	// TODO: 这里是其他业务操作
 	return nil
 }

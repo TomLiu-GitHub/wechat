@@ -1,3 +1,4 @@
+// Package wechat TODO：微信支付接口
 package wechat
 
 import (
@@ -100,6 +101,7 @@ func (s *Server) GetUnifedOrderUrl(desc, tradeNo, fee, ip, callback, tradetype, 
 	return ret.CodeUrl
 }
 
+// PayOrderScan 扫码付
 func (s *Server) PayOrderScan(mchId, ProductId string) string {
 	nonceStr := GetRandomString(10)
 	timeStamp := time.Now().Unix()

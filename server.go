@@ -21,19 +21,19 @@ import (
 	"github.com/esap/wechat/util"
 )
 
-// WXAPI 订阅号，服务号接口
+// WXAPI 订阅号，服务号接口，相关接口常量统一以此开头
 const (
-	WXAPI       = "https://api.weixin.qq.com/cgi-bin/"
-	WXAPI_TOKEN = WXAPI + "token?grant_type=client_credential&appid=%s&secret=%s"
-	WXAPI_MSG   = WXAPI + "message/custom/send?access_token="
-	WXAPI_JSAPI = WXAPI + "get_jsapi_ticket?access_token="
+	WXAPI      = "https://api.weixin.qq.com/cgi-bin/"
+	WXAPIToken = WXAPI + "token?grant_type=client_credential&appid=%s&secret=%s"
+	WXAPIMsg   = WXAPI + "message/custom/send?access_token="
+	WXAPIJsapi = WXAPI + "get_jsapi_ticket?access_token="
 )
 
 var (
 	// Debug is a flag to Println()
 	Debug bool = false
-	std   *Server
-	// UserServerMap 其他实例集
+
+	// UserServerMap 通讯录实例集，用于企业微信
 	UserServerMap = make(map[string]*Server)
 )
 
@@ -63,13 +63,13 @@ type Server struct {
 	ExternalTokenHandler func(appId string) *AccessToken // 通过外部方法统一获取access token ,避免集群情况下token失效
 }
 
-// New 微信服务容器，根据agentId判断是企业号或服务号
+// NewEnt 微信服务容器，根据agentId判断是企业号或服务号
 func NewEnt(token, appid, secret, key string, agentId ...int) (s *Server) {
 	s = NewServer(nil)
 	if len(agentId) > 0 {
 		s.SetEnt(token, appid, secret, key, agentId[0])
 		if agentId[0] == 9999999 {
-			UserServerMap[appid] = s
+			UserServerMap[appid] = s // 这里我们约定传入企业微信通讯录secret时，agentId=9999999
 		}
 	} else {
 		s.Set(token, appid, secret, key)
@@ -88,12 +88,12 @@ func New(token, appid, secret string, key ...string) (s *Server) {
 func NewServer(f func(appId string) *AccessToken) *Server {
 	s := &Server{
 		RootUrl:  WXAPI,
-		MsgUrl:   WXAPI_MSG,
-		TokenUrl: WXAPI_TOKEN,
-		JsApi:    WXAPI_JSAPI,
+		MsgUrl:   WXAPIMsg,
+		TokenUrl: WXAPIToken,
+		JsApi:    WXAPIJsapi,
 	}
 	s.ExternalTokenHandler = f
-	std = s
+	// std = s
 	s.init()
 	return s
 }
@@ -126,17 +126,8 @@ func (s *Server) Set(tk, id, sec string, key ...string) (err error) {
 	}
 	if err = s.getAccessToken(); err != nil {
 		Println("公众号获取AccessToken出错", err)
-	} /*else {
-		b, err := s.BatchGetAll()
-		Println("公众号用户:", b, err)
-	}*/
+	}
 	return nil
-}
-
-// Set 设置token,appId,secret
-func Set(tk, id, sec string, key ...string) (err error) {
-	std = NewServer(nil)
-	return std.Set(tk, id, sec, key...)
 }
 
 // VerifyURL 验证URL,验证成功则返回标准请求载体（Msg已解密）
@@ -169,7 +160,7 @@ func (s *Server) VerifyURL(w http.ResponseWriter, r *http.Request) (ctx *Context
 	// 验证signature
 	signature := r.FormValue("signature") + r.FormValue("msg_signature")
 	if s.EntMode && signature != sortSha1(s.Token, ctx.Timestamp, ctx.Nonce, echostr) {
-		log.Println("Signature验证错误!(企业号)", s.Token, ctx.Timestamp, ctx.Nonce, echostr)
+		log.Println("Signature验证错误!(企业微信)", s.Token, ctx.Timestamp, ctx.Nonce, echostr)
 		return
 	} else if !s.EntMode && r.FormValue("signature") != sortSha1(s.Token, ctx.Timestamp, ctx.Nonce) {
 		log.Println("Signature验证错误!(公众号)", s.Token, ctx.Timestamp, ctx.Nonce)
@@ -194,16 +185,12 @@ func (s *Server) VerifyURL(w http.ResponseWriter, r *http.Request) (ctx *Context
 			log.Println("Msg parse err:", err)
 		}
 	}
-	if r.Method == "POST" && ctx.Msg != nil && ctx.Msg.AgentType == "chat" {
-		Println("Chat echostr:", ctx.Msg.PackageId)
-		w.Write([]byte(ctx.Msg.PackageId))
-	}
+	// 旧的企业号会话接口，已失效
+	// if r.Method == "POST" && ctx.Msg != nil && ctx.Msg.AgentType == "chat" {
+	// 	Println("Chat echostr:", ctx.Msg.PackageId)
+	// 	w.Write([]byte(ctx.Msg.PackageId))
+	// }
 	return
-}
-
-// VerifyURL 验证URL,验证成功则返回标准请求载体（Msg已解密）
-func VerifyURL(w http.ResponseWriter, r *http.Request) (ctx *Context) {
-	return std.VerifyURL(w, r)
 }
 
 // sortSha1 排序并sha1，主要用于计算signature

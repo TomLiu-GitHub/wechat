@@ -13,11 +13,12 @@ const (
 	TypeVoice    = "voice"
 	TypeMusic    = "music"
 	TypeVideo    = "video"
-	TypeTextcard = "textcard" // 仅企业号可用
+	TypeTextcard = "textcard" // 仅企业微信可用
 	TypeWxCard   = "wxcard"   // 仅服务号可用
-	TypeFile     = "file"     // 仅企业号可用
+	TypeMarkDown = "markdown" // 仅企业微信可用
+	TypeFile     = "file"     // 仅企业微信可用
 	TypeNews     = "news"
-	TypeMpNews   = "mpnews" // 仅企业号可用
+	TypeMpNews   = "mpnews" // 仅企业微信可用
 	TypeThumb    = "thumb"
 )
 
@@ -75,9 +76,6 @@ func (s *Server) newWxResp(msgType, to string, agentId int) (r wxResp) {
 	}
 	return
 }
-func newWxResp(msgType, toUser string, agentId int) wxResp {
-	return std.newWxResp(msgType, toUser, agentId)
-}
 
 // Text 文本消息
 type (
@@ -97,11 +95,6 @@ func (s *Server) NewText(to string, id int, msg ...string) Text {
 		s.newWxResp(TypeText, to, id),
 		content{CDATA(strings.Join(msg, ""))},
 	}
-}
-
-// NewText Text 文本消息
-func NewText(to string, id int, msg ...string) Text {
-	return std.NewText(to, id, msg...)
 }
 
 // Image 图片消息
@@ -124,11 +117,6 @@ func (s *Server) NewImage(to string, id int, mediaId string) Image {
 	}
 }
 
-// NewImage Image 消息
-func NewImage(to string, id int, mediaId string) Image {
-	return std.NewImage(to, id, mediaId)
-}
-
 // Voice 语音消息
 type Voice struct {
 	wxResp
@@ -143,11 +131,6 @@ func (s *Server) NewVoice(to string, id int, mediaId string) Voice {
 	}
 }
 
-// NewVoice Voice消息
-func NewVoice(to string, id int, mediaId string) Voice {
-	return std.NewVoice(to, id, mediaId)
-}
-
 // File 文件消息，仅企业号支持
 type File struct {
 	wxResp
@@ -160,11 +143,6 @@ func (s *Server) NewFile(to string, id int, mediaId string) File {
 		s.newWxResp(TypeFile, to, id),
 		media{CDATA(mediaId)},
 	}
-}
-
-// NewFile File消息
-func NewFile(to string, id int, mediaId string) File {
-	return std.NewFile(to, id, mediaId)
 }
 
 // Video 视频消息
@@ -189,11 +167,6 @@ func (s *Server) NewVideo(to string, id int, mediaId, title, desc string) Video 
 	}
 }
 
-// NewVideo Video消息
-func NewVideo(to string, id int, mediaId, title, desc string) Video {
-	return std.NewVideo(to, id, mediaId, title, desc)
-}
-
 // Textcard 卡片消息，仅企业微信客户端有效
 type (
 	Textcard struct {
@@ -216,12 +189,7 @@ func (s *Server) NewTextcard(to string, id int, title, description, url string) 
 	}
 }
 
-// NewTextcard Textcard消息
-func NewTextcard(to string, id int, title, description, url string) Textcard {
-	return std.NewTextcard(to, id, title, description, url)
-}
-
-// Music 音乐消息，企业号不支持
+// Music 音乐消息，企业微信不支持
 type (
 	Music struct {
 		wxResp
@@ -245,11 +213,6 @@ func (s *Server) NewMusic(to string, id int, mediaId, title, desc, musicUrl, qhM
 	}
 }
 
-// NewMusic Music消息
-func NewMusic(to string, id int, mediaId, title, desc, musicUrl, qhMusicUrl string) Music {
-	return std.NewMusic(to, id, mediaId, title, desc, musicUrl, qhMusicUrl)
-}
-
 // News 新闻消息
 type News struct {
 	wxResp
@@ -267,11 +230,6 @@ func (s *Server) NewNews(to string, id int, arts ...Article) (news News) {
 	return
 }
 
-// NewNews news消息
-func NewNews(to string, id int, arts ...Article) (news News) {
-	return std.NewNews(to, id, arts...)
-}
-
 // Article 文章
 type Article struct {
 	Title       CDATA `json:"title"`
@@ -286,7 +244,7 @@ func NewArticle(title, desc, picUrl, url string) Article {
 }
 
 type (
-	// MpNews 加密新闻消息，仅企业号支持
+	// MpNews 加密新闻消息，仅企业微信支持
 	MpNews struct {
 		wxResp
 		MpNews struct {
@@ -303,28 +261,18 @@ type (
 	}
 )
 
-// NewMpNews 加密新闻mpnews消息(仅企业号可用)
+// NewMpNews 加密新闻mpnews消息(仅企业微信可用)
 func (s *Server) NewMpNews(to string, id int, arts ...MpArticle) (news MpNews) {
 	news.wxResp = s.newWxResp(TypeMpNews, to, id)
 	news.MpNews.Articles = arts
 	return
 }
 
-// NewMpNewsId 加密新闻mpnews消息(仅企业号可用)
+// NewMpNewsId 加密新闻mpnews消息(仅企业微信可用)
 func (s *Server) NewMpNewsId(to string, id int, mediaId string) (news MpNewsId) {
 	news.wxResp = s.newWxResp(TypeMpNews, to, id)
 	news.MpNews.MediaId = CDATA(mediaId)
 	return
-}
-
-// NewMpNews 加密新闻mpnews消息(仅企业号可用)
-func NewMpNews(to string, id int, arts ...MpArticle) (news MpNews) {
-	return std.NewMpNews(to, id, arts...)
-}
-
-// NewMpNewsId 加密新闻mpnews消息(仅企业号可用)
-func NewMpNewsId(to string, id int, mediaId string) (news MpNewsId) {
-	return std.NewMpNewsId(to, id, mediaId)
 }
 
 // MpArticle 加密文章
@@ -357,7 +305,17 @@ func (s *Server) NewWxCard(to string, id int, cardId string) (c WxCard) {
 	return
 }
 
-// NewWxCard 卡券消息，服务号可用
-func NewWxCard(to string, id int, cardId string) (c WxCard) {
-	return std.NewWxCard(to, id, cardId)
+// MarkDown markdown消息，仅企业微信支持，上限2048字节，utf-8编码
+type MarkDown struct {
+	wxResp
+	MarkDown struct {
+		Content string `json:"content"`
+	} `json:"markdown"`
+}
+
+// NewMarkDown markdown消息，企业微信可用
+func (s *Server) NewMarkDown(to string, id int, content string) (md MarkDown) {
+	md.wxResp = s.newWxResp(TypeMarkDown, to, id)
+	md.MarkDown.Content = content
+	return
 }
