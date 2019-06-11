@@ -52,30 +52,12 @@ func (s *Server) getAccessToken() (err error) {
 		Printf("使用外部函数获取token")
 		s.AccessToken = s.ExternalTokenHandler(s.AppId)
 		return
-<<<<<<< HEAD
-	} else {
-		Printf("使用本地机制获取token")
-		url := fmt.Sprintf(s.TokenUrl, s.AppId, s.Secret)
-		Printf(url)
-		at := new(AccessToken)
-		if err = util.GetJson(url, at); err != nil {
-			return
-		}
-		if at.ErrCode > 0 {
-			s.AccessToken = at
-			return at.Error()
-		}
-		Printf("[%v::%v]:%+v", s.AppId, s.AgentId, *at)
-		at.ExpiresIn = time.Now().Unix() + at.ExpiresIn - 5
-		s.AccessToken = at
-=======
 	}
 	Printf("使用本地机制获取token")
 	url := fmt.Sprintf(s.TokenUrl, s.AppId, s.Secret)
 	Printf(url)
 	at := new(AccessToken)
 	if err = util.GetJson(url, at); err != nil {
->>>>>>> 259719733fd708e6d532c3d1e0c0374b24955a2b
 		return
 	}
 	if at.ErrCode > 0 {
@@ -83,7 +65,7 @@ func (s *Server) getAccessToken() (err error) {
 	}
 	Printf("[%v::%v]:%+v", s.AppId, s.AgentId, *at)
 	at.ExpiresIn = time.Now().Unix() + at.ExpiresIn - 5
-	s.accessToken = at
+	s.AccessToken = at
 	return
 
 }
