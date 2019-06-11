@@ -31,7 +31,7 @@ type WxSession struct {
 func GetOauth2Url(corpId, host string) string {
 	return fmt.Sprintf(WXAPIOauth2, corpId, url.QueryEscape(host))
 }
-// 微信网页授权 通过code换取网页授权access_token
+// 微信网页授权 通过code换取网页授权access_token 
 func (s *Server) Code2token(code string) (ws *WxSession, err error) {
 	url := fmt.Sprintf(WXAPIOauth2token, s.AppId, s.Secret, code)
 	ws = new(WxSession)
