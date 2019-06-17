@@ -13,6 +13,8 @@ const (
 	WXAPIOauth2token      = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%v&secret=%v&code=%v&grant_type=authorization_code"
 	WXAPIJscode2session   = "https://api.weixin.qq.com/sns/jscode2session?appid=%v&secret=%v&js_code=%v&grant_type=authorization_code"
 	CorpAPIJscode2session = "https://qyapi.weixin.qq.com/cgi-bin/miniprogram/jscode2session?access_token=%v&js_code=%v&grant_type=authorization_code"
+	//开放平台
+	OpenApiOauth2 = "https://open.weixin.qq.com/connect/qrconnect?appid=%v&redirect_uri=%v&response_type=code&scope=snsapi_login&state=110#wechat_redirect"
 )
 
 // WxSession 兼容企业微信和服务号
@@ -30,6 +32,11 @@ type WxSession struct {
 // GetOauth2Url 获取鉴权页面
 func GetOauth2Url(corpId, host string) string {
 	return fmt.Sprintf(WXAPIOauth2, corpId, url.QueryEscape(host))
+}
+
+// 开放平台扫码登录页面
+func GetOpenOauth2Url(corpId, host string) string {
+	return fmt.Sprintf(OpenApiOauth2, corpId, url.QueryEscape(host))
 }
 
 // 获取OAuth AccessToken的结果 如果错误，返回结果{"errcode":40029,"errmsg":"invalid code"}
