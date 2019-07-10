@@ -9,7 +9,7 @@ import (
 
 // WXAPIOauth2 oauth2鉴权
 const (
-	WXAPIOauth2           = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%v&redirect_uri=%v&response_type=code&scope=snsapi_base&state=110#wechat_redirect"
+	WXAPIOauth2           = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_base&state=110#wechat_redirect"
 	WXAPIOauth2token      = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%v&secret=%v&code=%v&grant_type=authorization_code"
 	WXAPIJscode2session   = "https://api.weixin.qq.com/sns/jscode2session?appid=%v&secret=%v&js_code=%v&grant_type=authorization_code"
 	CorpAPIJscode2session = "https://qyapi.weixin.qq.com/cgi-bin/miniprogram/jscode2session?access_token=%v&js_code=%v&grant_type=authorization_code"

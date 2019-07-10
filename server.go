@@ -176,6 +176,7 @@ func (s *Server) VerifyURL(w http.ResponseWriter, r *http.Request) (ctx *Context
 	}
 	if r.Method == "GET" {
 		Println("api echostr:", echostr)
+		w.WriteHeader(200)
 		w.Write([]byte(echostr))
 		return
 	}
